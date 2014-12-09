@@ -1,0 +1,25 @@
+{
+  "name": "rtcs.io",
+  "description": "Messanger library (server and client side) based on Socket.IO with WebRTC support. Work in progress. Deep alpha version :)",
+  "version": "0.0.19-1",
+  "license": "MIT",
+  "author": {
+    "name": "Maksim Krylosov",
+    "email": "aequiternus@gmail.com"
+  },
+  "main": "server/",
+  "dependencies": {
+    "cookie": "*",
+    "socket.io": "*",
+    "rtcs.io-storage": "*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-bump": "*",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-less": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-curl": "*",
+    "grunt-surround": "*"
+  }
+}

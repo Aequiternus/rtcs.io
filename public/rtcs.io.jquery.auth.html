@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>RTCS.IO jQuery</title>
+    <meta name="viewport" content="initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="rtcs.io.jquery.css">
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background: #48c;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        body > div {
+            display: table !important;
+            width: 100%;
+            height: 100%;
+        }
+
+        body > div > div {
+            display: table-row;
+        }
+
+        body > div > div > div {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        form {
+            width: 200px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: .5em;
+        }
+
+        label {
+            display: block;
+            margin-right: 3.5em;
+        }
+
+        button {
+            float: right;
+            margin-left: .5em !important;
+        }
+
+    </style>
+    <script>
+        function auth(form) {
+            setCookie('rtcs.io-guest', form.elements.name.value, 30);
+            window.location = 'rtcs.io.jquery.html';
+            return false;
+        }
+
+        function setCookie(cname, cvalue, exdays, path) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            document.cookie = cname + "=" + cvalue + "; expires=" + d.toUTCString() + "; path=/";
+        }
+
+    </script>
+</head>
+<body>
+
+    <div class="rtcsio-box rtcsio"><div><div>
+        <form onsubmit="return auth(this)">
+            <button type="submit" class="fa fa-sign-in"></button>
+            <label>
+                <input name="name" type="text" placeholder="Guest name">
+            </label>
+        </form>
+    </div></div></div>
+
+</body>
+</html>

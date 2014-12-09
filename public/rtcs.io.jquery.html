@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>RTCS.IO jQuery</title>
+    <meta name="viewport" content="initial-scale=1, user-scalable=no">
+    <style>
+        body {
+            background: #48c;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+    </style>
+
+    <link rel="stylesheet" href="rtcs.io.jquery.css">
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="//cdn.socket.io/socket.io-1.1.0.js"></script>
+    <script src="rtcs.io.jquery.js"></script>
+    <script>
+        $(function() {
+            rtcsio({
+                "pcConfig": {
+                    "iceServers": [
+                        {"url": "stun:stun.l.google.com:19302"}
+                    ]
+                },
+                "authPage": "rtcs.io.jquery.auth.html"
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <div class="rtcsio">
+        <div class="rtcsio-video">
+            <video></video>
+        </div>
+        <div class="rtcsio-box">
+            <div class="rtcsio-media"></div>
+            <div class="rtcsio-logs"></div>
+            <div class="rtcsio-rooms-box">
+                <div class="rtcsio-rooms">
+                    <div class="rtcsio-peers">
+                        <div class="rtcsio-self">
+                            <video></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="rtcsio-contacts-box">
+                <div class="rtcsio-contacts"></div>
+            </div>
+            <form class="rtcsio-contacts-form">
+                <button class="fa fa-user rtcsio-btn-user"></button>
+                <button class="fa fa-users rtcsio-btn-room"></button>
+                <label class="rtcsio-label-name"><input type="text" class="rtcsio-input-name"></label>
+            </form>
+            <form class="rtcsio-message-form">
+                <button type="button" class="fa fa-navicon rtcsio-btn-menu"></button>
+                <button type="button" class="fa fa-video-camera rtcsio-btn-video rtcsio-btn-active"></button>
+                <button type="button" class="fa fa-microphone rtcsio-btn-audio rtcsio-btn-active"></button>
+                <button type="button" class="fa fa-phone rtcsio-btn-media"></button>
+                <button type="submit" class="fa fa-send rtcsio-btn-send"></button>
+                <label class="rtcsio-label-message"><input type="text" class="rtcsio-input-message"></label>
+            </form>
+        </div>
+
+        <div class="rtcsio-box-menu">
+            <div class="fa fa-navicon rtcsio-btn-contacts"></div>
+            <div class="fa fa-comments rtcsio-btn-log"></div>
+            <div class="fa fa-users rtcsio-btn-members"></div>
+        </div>
+
+        <div class="rtcsio-tpl-room">
+            <div class="pull-right">
+                <i class="fa fa-video-camera fa-fw rtcsio-media-icon"></i>
+                <i class="fa fa-close fa-fw rtcsio-contact-close"></i>
+            </div>
+            <i class="fa fa-users fa-fw"></i>&nbsp;
+            {name}
+        </div>
+        <div class="rtcsio-tpl-user">
+            <div class="pull-right">
+                <i class="fa fa-video-camera fa-fw rtcsio-media-icon"></i>
+                <i class="fa fa-close fa-fw rtcsio-contact-close"></i>
+            </div>
+            <i class="fa fa-user fa-fw"></i>&nbsp;
+            {name}
+        </div>
+        <div class="rtcsio-tpl-message">
+            <p class="rtcsio-message">
+                <i>{time}</i>
+                <b>{name}</b>:
+                {message}
+            </p>
+        </div>
+        <div class="rtcsio-tpl-member">
+            <div class="pull-right">
+                <i class="fa fa-video-camera fa-fw rtcsio-media-icon"></i>
+            </div>
+            <i class="fa fa-user fa-fw"></i>&nbsp;
+            {name}
+        </div>
+        <div class="rtcsio-tpl-peer">
+            <video></video>
+        </div>
+    </div>
+
+</body>
+</html>
