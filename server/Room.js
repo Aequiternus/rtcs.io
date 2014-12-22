@@ -36,30 +36,29 @@ Room.prototype.getData = function(callback) {
     }
 };
 
-Room.prototype.check = function(evt, msg, callback) {
-    log.silly('Room.check');
+Room.prototype.allowed = function(evt, msg, callback) {
+    log.silly('Room.allowed');
     var self = this;
     self.getData(function(err, data) {
         if (err) {
             callback(err);
         } else if (data) {
+            var allowed;
             if (data.allow) {
                 if ('object' === typeof data.allow) {
-                    if (-1 !== data.allow.indexOf(self.server.user.id)) {
-                        callback();
-                    }
-                } else if (data.rooms && -1 !== data.rooms.indexOf(self.server.user.id)) {
-                    callback();
-                }
-            } else if (data.disallow) {
-                if (-1 === data.disallow.indexOf(self.server.user.id)) {
-                    callback();
+                    allowed = (-1 !== data.allow.indexOf(self.server.user.id));
+                } else if (self.server.allow[data.allow]) {
+                    allowed = self.server.allow[data.allow](self.server.user, data, evt, msg);
                 }
             } else {
-                callback();
+                allowed = true;
             }
+            if (allowed && data.disallow) {
+                allowed = (-1 === data.disallow.indexOf(self.server.user.id));
+            }
+            callback(null, allowed);
         } else {
-            callback();
+            callback(null, true);
         }
     });
 };
@@ -78,20 +77,24 @@ Room.prototype.join = function(socket, msg) {
     self.server.temp.addUserToRoom(socket.user.id, self.id, function(err, already) {
         if (err) {
             log.error(err);
-        } else if (already) {
-            log.debug('[%s] Room.join: already in room', socket.id);
         } else {
-            self.server.data.getUser(socket.user.id, function(err, data) {
-                if (err) {
-                    log.error(err);
-                } else {
-                    data = data.public;
-                    data.id = socket.user.id;
-                    self.broadcast(socket, 'join', {
-                        user: data
-                    });
-                }
-            });
+            log.silly('Room.join: temp.addUserToRoom: %j', already);
+            if (already) {
+                log.debug('[%s] Room.join: already in room', socket.id);
+            } else {
+                self.server.data.getUser(socket.user.id, function(err, data) {
+                    if (err) {
+                        log.error(err);
+                    } else {
+                        log.silly('Room.join: data.getUser: %j', data);
+                        data = data.public;
+                        data.id = socket.user.id;
+                        self.broadcast(socket, 'join', {
+                            user: data
+                        });
+                    }
+                });
+            }
         }
     });
 
@@ -102,19 +105,27 @@ Room.prototype.join = function(socket, msg) {
         self.server.data.getUser(self.userId, function(err, data) {
             if (err) {
                 done(err);
-            } else if (data) {
-                res.user = (data && data.public) || {};
-                res.user.id = self.userId;
-                done();
             } else {
-                log.debug('[%s] Room.join: no user data for %s', socket.id, self.userId);
+                log.silly('Room.join: data.getUser: %j', data);
+                if (data) {
+                    res.user = (data && data.public) || {};
+                    res.user.id = self.userId;
+                    done();
+                } else {
+                    log.debug('[%s] Room.join: no user data for %s', socket.id, self.userId);
+                }
             }
         });
     } else {
         self.server.data.getRoom(self.id, function(err, data) {
-            res.room = (data && data.public) || {};
-            res.room.id = self.id;
-            done(err);
+            if (err) {
+                done(err);
+            } else {
+                log.silly('Room.join: data.getRoom: %j', data);
+                res.room = (data && data.public) || {};
+                res.room.id = self.id;
+                done();
+            }
         });
     }
 
@@ -122,25 +133,37 @@ Room.prototype.join = function(socket, msg) {
         if (err) {
             done(err);
         } else {
+            log.silly('Room.join: temp.getRoomUsers: %j', userIds);
             self.server.data.getUsers(userIds, function(err, users) {
-                if (users) {
-                    res.users = {};
-                    for (var userId in users) {
-                        if (users.hasOwnProperty(userId)) {
-                            res.users[userId] = (users[userId] && users[userId].public) || {};
+                if (err) {
+                    done(err);
+                } else {
+                    log.silly('Room.join: data.getUsers: %j', users);
+                    if (users) {
+                        res.users = {};
+                        for (var userId in users) {
+                            if (users.hasOwnProperty(userId)) {
+                                res.users[userId] = (users[userId] && users[userId].public) || {};
+                                res.users[userId].id = userId;
+                            }
                         }
                     }
+                    done();
                 }
-                done(err);
             })
         }
     });
 
     self.server.data.getLog(self.id, msg && msg.time, function(err, msglog) {
-        if (msglog) {
-            res.log = msglog;
+        if (err) {
+            done(err);
+        } else {
+            log.silly('Room.join: data.getLog: %j', msglog);
+            if (msglog) {
+                res.log = msglog;
+            }
+            done();
         }
-        done(err);
     });
 
     function done(err) {
@@ -183,19 +206,21 @@ Room.prototype.leave = function(socket, disconnect) {
 
 Room.prototype.chat = function(socket, msg) {
     log.silly('Room.chat');
+    var self = this;
     var time = + new Date();
-    this.broadcast(socket, 'chat', {
-        time: time,
-        user: socket.user.id,
-        message: msg.message
-    });
-    this.server.data.addLog(this.id, {
+    self.server.data.addLog(self.id, {
         time: time,
         user: socket.user.public,
         message: msg.message
     }, function(err) {
         if (err) {
             log.error(err);
+        } else {
+            self.broadcast(socket, 'chat', {
+                time: time,
+                user: socket.user.id,
+                message: msg.message
+            });
         }
     });
 };

@@ -22,7 +22,9 @@ function Socket(io) {
 
     io.on('error', function(msg) {
         error(msg);
-        window.location = options.authPage;
+        if (msg.toString().match(/^Authentication error:/)) {
+            window.location = options.authPage;
+        }
     });
 
     io.on('init', function(msg) {

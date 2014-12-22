@@ -4,15 +4,15 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         curl: {
-            'client/adapter.js': 'http://webrtc.googlecode.com/svn/stable/samples/js/base/adapter.js'
+            'client/adapter.js': 'https://raw.githubusercontent.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js'
         },
 
         less: {
-            'public/rtcsio.jquery.css': 'client/View/default.jquery.less'
+            'public/rtcs.io.jquery.css': 'client/View/default.jquery.less'
         },
 
         concat: {
-            'public/rtcsio.jquery.js': [
+            'public/rtcs.io.jquery.js': [
                 'client/adapter.js',
                 'client/index.js',
                 'client/localStream.js',
@@ -30,7 +30,7 @@ module.exports = function(grunt) {
                     prepend: '(function($){',
                     append: '}(jQuery));'
                 },
-                src: 'public/rtcsio.jquery.js'
+                src: 'public/rtcs.io.jquery.js'
             }
         },
 
@@ -63,6 +63,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-bump');
+    grunt.loadNpmTasks('grunt-npm');
     grunt.loadNpmTasks('grunt-surround');
 
     grunt.registerTask('default', [
@@ -82,7 +83,8 @@ module.exports = function(grunt) {
         grunt.task.run('surround');
         grunt.task.run('cssmin');
         grunt.task.run('uglify');
-        grunt.task.run('bump-only:' + (type || 'patch'));
+        grunt.task.run('bump:' + (type || 'patch'));
+        grunt.task.run('npm-publish');
     });
 
 };

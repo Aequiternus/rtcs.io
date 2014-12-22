@@ -24,26 +24,27 @@ function createServer() { // ( [ io | port | server ], [ options ] )
 
     var opts;
     var io;
+    var createType;
 
     var args = Array.prototype.slice.call(arguments);
     var arg = args.shift();
     if (!arg) {
-        log.debug('create default socket.io');
+        createType = 1;
         io = socketIO();
     } else if (arg instanceof socketIO) { // Socket.IO Server
-        log.debug('use existing socket.io server');
+        createType = 2;
         opts = args.shift();
         io = arg;
     } else if ('number' === typeof arg) { // Port
-        log.debug('create socket.io at port %s', arg);
+        createType = 3;
         opts = args.shift();
         io = socketIO(arg, opts);
     } else if (arg.listen) { // HTTP(S) Server
-        log.debug('create socket.io with http(s) server');
+        createType = 4;
         opts = args.shift();
         io = socketIO(arg, opts);
     } else {
-        log.debug('create socket.io');
+        createType = 5;
         opts = arg;
         io = socketIO(opts);
     }
@@ -66,6 +67,13 @@ function createServer() { // ( [ io | port | server ], [ options ] )
 
     log.level = options.logLevel;
 
-    log.debug('create rtcs.io server');
+    switch (createType) {
+        case 1: log.debug('create default socket.io'); break;
+        case 2: log.debug('use existing socket.io server'); break;
+        case 3: log.debug('create socket.io at port %s', arg); break;
+        case 4: log.debug('create socket.io with http(s) server'); break;
+        case 5: log.debug('create socket.io'); break;
+    }
+
     return new Server(io, options);
 }

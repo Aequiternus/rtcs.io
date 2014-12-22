@@ -13,15 +13,20 @@ function Server(io, options) {
     log.silly('new Server');
     this.io = io;
     this.options = options;
+    this.allow = {};
 
     this.setData(new storage.Data(options.data));
     this.setTemp(new storage.Temp(options.temp));
 
+    this.setAllow(true, allowAny);
+    this.setAllow('users', allowUsersOnly);
+    this.setAllow('contacts', allowContactsOnly);
+
     var self = this;
 
-    //self.io.httpServer.on('close', function() {
-    //    self.close();
-    //});
+    self.io.httpServer.on('close', function() {
+        self.close();
+    });
 
     io.use(function(socket, next) {
         log.debug('[%s] authentication', socket.id);
@@ -56,12 +61,12 @@ function Server(io, options) {
                     next(err);
                 });
             } else {
-                err = new Error('no session and anonymous not allowed');
+                err = new Error('Authentication error: no session and anonymous not allowed');
                 log.debug('[%s] authentication: %s', socket.id, err);
                 next(err);
             }
         } else {
-            err = new Error('no session and guests not allowed');
+            err = new Error('Authentication error: no session and guests not allowed');
             log.debug('[%s] authentication: %s', socket.id, err);
             next(err);
         }
@@ -94,52 +99,39 @@ function Server(io, options) {
         });
 
         socket.on('join',   function(msg) {
-            roomEvent('join',   'canJoin', msg, [socket, msg]);
+            roomEvent('join', msg, [socket, msg]);
         });
 
         socket.on('leave',  function(msg) {
-            roomEvent('leave',  'canJoin', msg, [socket]);
+            roomEvent('leave', msg, [socket]);
         });
 
         socket.on('chat',   function(msg) {
-            roomEvent('chat',   'canChat', msg, [socket, msg]);
+            roomEvent('chat', msg, [socket, msg]);
         });
 
         socket.on('peer',   function(msg) {
-            roomEvent('peer',   'canPeer', msg, [socket]);
+            roomEvent('peer', msg, [socket]);
         });
 
         socket.on('unpeer', function(msg) {
-            roomEvent('unpeer', 'canPeer', msg, [socket]);
+            roomEvent('unpeer', msg, [socket]);
         });
 
-        function roomEvent(evt, can, msg, args) {
-            fire(evt, msg);
-            if (socket.user && (msg.room || msg.user)) {
-                self.data[can](socket, msg, function(err) {
-                    if (err) {
-                        log.error('[%s] %s: %s', socket.id, evt, err);
-                    } else {
-                        var room = getRoom(msg);
-                        if (room) {
-                            room[evt].apply(room, args);
-                        } else {
-                            log.debug('[%s] %s: no room', socket.id, evt);
-                        }
-                    }
-                });
-            }
-        }
-
-        function roomEvent(evt, can, msg, args) {
+        function roomEvent(evt, msg, args) {
             fire(evt, msg);
             if (socket.user && (msg.room || msg.user)) {
                 var room = getRoom(msg);
                 if (room) {
-                    room.check(evt, msg, function(err, data) {
-
+                    room.allowed(evt, msg, function(err, allowed) {
+                        if (err) {
+                            log.error('[%s] %s: %s', socket.id, evt, err);
+                        } else if (allowed) {
+                            room[evt].apply(room, args);
+                        } else {
+                            log.debug('[%s] %s: not allowed', socket.id, evt);
+                        }
                     });
-                    room[evt].apply(room, args);
                 } else {
                     log.debug('[%s] %s: no room', socket.id, evt);
                 }
@@ -257,6 +249,23 @@ Server.prototype.setTemp = function(temp) {
 };
 
 Server.prototype.close = function() {
+    log.silly('Server.close');
     this.data.close();
     this.temp.close();
 };
+
+Server.prototype.setAllow = function(name, callback) {
+    this.allow[name] = callback;
+};
+
+function allowAny() {
+    return true;
+}
+
+function allowUsersOnly(user) {
+    return !user.public.guest;
+}
+
+function allowContactsOnly(user, room) {
+    return (room.rooms && -1 !== room.rooms.indexOf(user.id));
+}
