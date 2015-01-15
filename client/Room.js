@@ -140,7 +140,7 @@ Room.prototype.receiveInvite = function() {
 };
 
 Room.prototype.receiveJoin = function(user) {
-    if (!user.id || this.users[user.id] || user.id === this.socket.user.id) {
+    if (!user.id || this.users[user.id]) {
         return;
     }
     this.users[user.id] = user;

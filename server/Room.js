@@ -36,7 +36,7 @@ Room.prototype.getData = function(callback) {
     }
 };
 
-Room.prototype.allowed = function(evt, msg, callback) {
+Room.prototype.allowed = function(socket, evt, msg, callback) {
     log.silly('Room.allowed');
     var self = this;
     self.getData(function(err, data) {
@@ -46,15 +46,15 @@ Room.prototype.allowed = function(evt, msg, callback) {
             var allowed;
             if (data.allow) {
                 if ('object' === typeof data.allow) {
-                    allowed = (-1 !== data.allow.indexOf(self.server.user.id));
+                    allowed = (-1 !== data.allow.indexOf(socket.user.id));
                 } else if (self.server.allow[data.allow]) {
-                    allowed = self.server.allow[data.allow](self.server.user, data, evt, msg);
+                    allowed = self.server.allow[data.allow](socket.user, data, evt, msg);
                 }
             } else {
                 allowed = true;
             }
             if (allowed && data.disallow) {
-                allowed = (-1 === data.disallow.indexOf(self.server.user.id));
+                allowed = (-1 === data.disallow.indexOf(socket.user.id));
             }
             callback(null, allowed);
         } else {
@@ -256,7 +256,9 @@ Room.prototype.unpeer = function(socket) {
 Room.prototype.broadcast = function(socket, evt, msg) {
     if (this.userId) {
         socket.user.broadcast(socket, evt, msg);
-        new User(this.server, this.userId).emit(evt, msg);
+        if (this.userId !== socket.user.id) {
+            new User(this.server, this.userId).emit(evt, msg);
+        }
     } else {
         if (!msg.room) {
             msg.room = this.id;

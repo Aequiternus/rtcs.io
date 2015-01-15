@@ -19,6 +19,7 @@ function Server(io, options) {
     this.setTemp(new storage.Temp(options.temp));
 
     this.setAllow(true, allowAny);
+    this.setAllow('all', allowAny);
     this.setAllow('users', allowUsersOnly);
     this.setAllow('contacts', allowContactsOnly);
 
@@ -123,7 +124,7 @@ function Server(io, options) {
             if (socket.user && (msg.room || msg.user)) {
                 var room = getRoom(msg);
                 if (room) {
-                    room.allowed(evt, msg, function(err, allowed) {
+                    room.allowed(socket, evt, msg, function(err, allowed) {
                         if (err) {
                             log.error('[%s] %s: %s', socket.id, evt, err);
                         } else if (allowed) {

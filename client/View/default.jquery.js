@@ -113,6 +113,9 @@ function View(socket) {
             .removeClass('rtcsio-box-log')
             .removeClass('rtcsio-box-members')
             .addClass('rtcsio-box-contacts');
+        self.btnContacts.addClass('rtcsio-btn-contacts-active');
+        self.btnLog.removeClass('rtcsio-btn-log-active');
+        self.btnMembers.removeClass('rtcsio-btn-members-active');
     });
 
     this.btnLog.click(function() {
@@ -120,6 +123,9 @@ function View(socket) {
             .removeClass('rtcsio-box-contacts')
             .removeClass('rtcsio-box-members')
             .addClass('rtcsio-box-log');
+        self.btnContacts.removeClass('rtcsio-btn-contacts-active');
+        self.btnLog.addClass('rtcsio-btn-log-active');
+        self.btnMembers.removeClass('rtcsio-btn-members-active');
     });
 
     this.btnMembers.click(function() {
@@ -127,6 +133,9 @@ function View(socket) {
             .removeClass('rtcsio-box-contacts')
             .removeClass('rtcsio-box-log')
             .addClass('rtcsio-box-members');
+        self.btnContacts.removeClass('rtcsio-btn-contacts-active');
+        self.btnLog.removeClass('rtcsio-btn-log-active');
+        self.btnMembers.addClass('rtcsio-btn-members-active');
     });
 }
 
