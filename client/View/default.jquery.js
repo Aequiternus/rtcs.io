@@ -149,7 +149,7 @@ View.prototype.name = function(callback) {
 };
 
 View.prototype.init = function() {
-    this.main.fadeIn();
+    this.main.show(); //fadeIn - sometimes menu doesn't appear in chrome
     this.inputMessage.focus();
 
     //var activeRoom = localStorage.getItem('rtcsio.room');

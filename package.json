@@ -1,7 +1,7 @@
 {
   "name": "rtcs.io",
   "description": "Messanger library (server and client side) based on Socket.IO with WebRTC support. Work in progress. Deep alpha version",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "license": "MIT",
   "author": {
     "name": "Maksim Krylosov",

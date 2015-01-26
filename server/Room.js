@@ -255,10 +255,13 @@ Room.prototype.unpeer = function(socket) {
 
 Room.prototype.broadcast = function(socket, evt, msg) {
     if (this.userId) {
-        socket.user.broadcast(socket, evt, msg);
         if (this.userId !== socket.user.id) {
             new User(this.server, this.userId).emit(evt, msg);
         }
+        if (!msg.room) {
+            msg.room = this.id;
+        }
+        socket.user.broadcast(socket, evt, msg);
     } else {
         if (!msg.room) {
             msg.room = this.id;
